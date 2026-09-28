@@ -1,0 +1,76 @@
+# 全局带宽上限（Mbps）。所有玩家下载合起来只能占这么多带宽。
+# 内部换算：bytesPerSec = mbps * 1_000_000 / 8
+bandwidth:
+  mbps: 20
+
+# 生成给玩家下载的资源包 URL 时使用的主机地址（用户自填），如公网 IP 或域名。
+server:
+  ip: "127.0.0.1"
+  # 监听端口（HTTP/HTTPS 共用）
+  port: 8080
+  # true = 走 HTTPS；false = 走 HTTP（默认，最稳）
+  https: false
+  tls:
+    # HTTPS 用：PKCS12 keystore 绝对路径；留空则首次运行自动生成自签证书
+    keystore: ""
+    # keystore 密码
+    password: "changeit"
+
+# 材质包目录（相对插件数据目录），里面每个 *.zip 是"一个源包"。
+packs:
+  folder: "packs"
+
+  # true = 把 packs/ 里"单个不超过上限"的源包合成成"一个"资源包再下发给玩家（推荐）。
+  #        同名文件按文件名排序，靠后的源包覆盖靠前的；合成包的名称与图标由下面几项决定（不再沿用源包的）。
+  #        单个就超过 max-size-mb 的源包不参与合成，单独下发。
+  # false = 旧行为，每个 zip 各作为一个独立资源包分别下发（此时各源包保持自己的名称与图标）。
+  merge: true
+
+  # 合成产物的文件名（不含 .zip），只决定下载 URL，不在客户端显示。
+  merge-name: "xiaohu_all_in_one"
+
+  # 合成后资源包在客户端"资源包"列表里显示的名称（写入 pack.mcmeta 的 description）。
+  name: "小胡自定义世界材质包"
+  # 名称颜色：JSON 颜色名（yellow / gold / red / aqua ...）或 #RRGGBB，如 "#FFD700"。
+  name-color: "yellow"
+
+  # 合成包的图标（pack.png）写死在插件内（jar 里的 pack-icon.png），不释放到数据目录、
+  # 也不可通过配置更换。要换图标需要替换插件 jar 内的该资源后重新构建。
+
+  # 合成包的资源包版本号（客户端据此判断"是否兼容"）。合成包的 pack.mcmeta 由插件完整生成，
+  # 不沿用源包的版本声明——所以源包写得再乱也不影响合成包。输出的三个字段：
+  #   "pack_format": 见下面 pack-format   （26.2 的权威值 = 88）
+  #   "min_format":  见下面 min-format
+  #   "max_format":  同 pack-format
+  # 88 取自本机真实 Paper/vanilla 26.2 服务端 jar 内 version.json 的
+  # pack_version.resource_major（resource_minor = 0），是权威值。
+  pack-format: 88
+
+  # 兼容区间下界（写入 min_format）。默认 80：26.1~26.2 客户端都在区间内，
+  # 更早的客户端也不会提示"不兼容的旧资源包"。想只声明 26.2 就改成 88。
+  min-format: 80
+
+  # 合成目录（相对插件数据目录，插件自己管理）：合成产物放这里，
+  # 超过单包上限被拆分时，分片放在其 parts/ 子目录。热加载会先删旧产物再重新生成。
+  merge-folder: "merged"
+
+  # 单个资源包大小上限（MB）。客户端硬上限 250，为拆分时的 zip 头开销留余量，
+  # 配置超过 248 会被按 248 处理（默认 245）。路由规则：
+  #   · 单个源包 ≤ 该上限  -> 参与合成（合成结果若超过该上限，再拆成多份下发）
+  #   · 单个源包 >  该上限  -> 不参与合成，单独下发，并按该上限自行拆成多份
+  max-size-mb: 245
+
+  # 进服前面板（Minecraft 资源包确认界面）的引导文案（支持 legacy & 颜色码）。
+  # 会在其下方自动追加：合成的包数/总大小/服务器总速度；若被拆分还会注明分成几份。
+  # 是/否由客户端面板按钮决定；选"否"且强制收包开启时会被踢出。
+  prompt: "&e是否下载本服务器的重要资源包？"
+  # true = 强制收包（进服不询问，直接下发）
+  # false = 询问模式：进服发聊天询问（可点击[是]/[否]），未选择前每 ask.repeat-seconds 秒重发一次
+  force: true
+
+# 询问模式设置（仅当 packs.force=false 时生效）。
+ask:
+  # 询问重发间隔（秒）。玩家未点[是]/[否]前一直重发。
+  repeat-seconds: 7
+  # 超时秒数：玩家在此时限内未选择，则自动下发资源包并停止重发。0 = 不设超时（一直重发直到选择）。
+  timeout-seconds: 60

@@ -1,0 +1,24 @@
+name: xiaohu_package
+version: ${version}
+main: com.xiaohu.resourcepack.XiaohuPackagePlugin
+api-version: "26.2"
+description: 材质包分发插件（全局限速 / HTTP(S) 服务 / 强制收包）
+author: Xiaohu
+commands:
+  xiaohu_package:
+    description: 材质包分发管理命令
+    usage: |
+      /xiaohu_package help
+      /xiaohu_package resend <player>
+      /xiaohu_package resendall
+      /xiaohu_package reload
+      /xiaohu_package reload force
+      /xiaohu_package status
+    permission: xiaohu_package.admin
+  xiaohu_packanswer:
+    description: 回答是否下载资源包
+    usage: /xiaohu_packanswer <yes|no>
+permissions:
+  xiaohu_package.admin:
+    description: 允许使用 xiaohu_package 管理命令
+    default: op
